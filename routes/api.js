@@ -33,7 +33,7 @@ router.get('/:resource',function(req,res,next){
     }
     res.json({
       status:'success',
-      result:results
+      results:results
     })
 
   })
@@ -48,7 +48,7 @@ router.get('/:resource/:id',function(req,res,next){
    if(controller == null){
      res.json({
        status:'fail',
-       message: 'Invalid Resource Request : '+ resource
+       results: 'Invalid Resource Request : '+ resource
      })
      return
    }
@@ -56,13 +56,13 @@ router.get('/:resource/:id',function(req,res,next){
     if(err){
       res.json({
         status:'fail',
-        message : 'Not Found'
+        results : 'Not Found'
       })
       return
     }
     res.json({
       status:'success',
-      result:result
+      results:result
     })
   })
 
@@ -77,7 +77,7 @@ router.post('/:resource',function(req,res,next){
    if(controller == null){
      res.json({
        status:'fail',
-       message: 'Invalid Resource Request : '+ resource
+       results: 'Invalid Resource Request : '+ resource
      })
      return
    }
@@ -86,13 +86,13 @@ router.post('/:resource',function(req,res,next){
     if(err){
       res.json({
         status:'fail',
-        message:err
+        results:err
       })
       return
     }
     res.json({
       status:'success',
-      message: resource + " is created successfully with id : " + result._id
+      results: result
     })
   });
 

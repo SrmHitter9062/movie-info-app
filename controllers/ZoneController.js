@@ -22,13 +22,13 @@ module.exports = {
 
   },
   create:function(params,callback){
-    var zipcodes = params['zipCodes'].split(',');
-    var zipArray = [];
-    zipcodes.forEach(function(zipCode){
-      zipArray.push(zipCode.trim());
-      //validate zipcodes(should be 5 digits)
-    })
-    params['zipCodes'] = zipcodes;
+    // var zipcodes = params['zipCodes'].split(',');
+    // var zipArray = [];
+    // zipcodes.forEach(function(zipCode){
+    //   zipArray.push(zipCode.trim());
+    //   //validate zipcodes(should be 5 digits)
+    // })
+    // params['zipCodes'] = zipcodes;
     Zone.create(params,function(err,zone){
       if(err){
         callback(err,null)

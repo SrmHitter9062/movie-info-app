@@ -1,23 +1,61 @@
 import React , { Component } from 'react'
-import Zone from '../presentation/Zone'
+import { CreateZone ,Zone } from  '../presentation'
+import { APIManager } from '../../utils'
 
 class Zones extends Component{
   constructor(){
     super()
     this.state = {
-      list:[
-        {name:'zone 1',zipCode:'10012' , numComments:10},
-        {name:'zone 2',zipCode:'10013' , numComments:20},
-        {name:'zone 3',zipCode:'10014' , numComments:30},
-        {name:'zone 4',zipCode:'10015' , numComments:40},
-        {name:'zone 5',zipCode:'10016' , numComments:50}
-      ]
+      selected:0,
+      list:[]
     }
+  }
+  componentDidMount(){
+    console.log('Zones componentDidMount')
+    APIManager.get('/api/zone',null,(err,response)=>{
+      if(err){
+        alert('ERROR :'+err.message)
+        return
+      }
+      let results = response.results
+      this.setState({
+        list:results
+      })
+    })
+  }
+  addZone(zone){
+    let updatedZone = Object.assign({},zone)
+    APIManager.post('/api/zone',updatedZone,(err,response)=>{
+      if(err){
+        console.log("ERROR :" + err)
+        return
+      }
+      console.log("ZONE CREATED : "+JSON.stringify(response))
+      let updatedList = Object.assign([],this.state.list)
+      updatedList.push(response.results)
+      this.setState({
+        list:updatedList
+      })
+
+    })
+    // let updatedList = Object.assign([],this.state.list)
+    // updatedList.push(this.state.zone)
+    // //save the data
+    // this.setState({
+    //   list:updatedList
+    // })
+  }
+  selectZone(index){
+    console.log("a zone is selected " , index);
+    this.setState({
+      selected : index
+    })
   }
   render(){
     const listItems = this.state.list.map((zone,i) => {
+      let selected = (i == this.state.selected)
       return (
-        <li><Zone currentZone={zone}/></li>
+        <li key={i}><Zone index = {i} select = {this.selectZone.bind(this)} isSelected = {selected} currentZone={zone}/></li>
       )
     })
     return(
@@ -25,6 +63,8 @@ class Zones extends Component{
           <ol>
               {listItems}
           </ol>
+
+          <CreateZone onCreate={this.addZone.bind(this)} />
         </div>
     )
   }

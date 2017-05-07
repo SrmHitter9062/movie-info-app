@@ -5,7 +5,7 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose')
-var dbUrl = 'mongodb://localhost:27017/node_create_app'
+var dbUrl = 'mongodb://localhost:27017/movie-info-app'
 mongoose.connect(dbUrl,function(err,res){
   if(err){
     console.log('db connection failed: '+err);

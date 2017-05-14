@@ -6,7 +6,6 @@ class App extends Component {
   render(){
     return (
       <div>
-        Hello React!!
         <Home />
       </div>
     )
@@ -14,3 +13,15 @@ class App extends Component {
 }
 
 ReactDOM.render(<App />,document.getElementById('root'))
+
+class MovieHomePage extends Component {
+  render(){
+    return (
+      <div>
+        <Home />
+      </div>
+    )
+  }
+}
+
+ReactDOM.render(<MovieHomePage />,document.getElementById('movie_home_root'))

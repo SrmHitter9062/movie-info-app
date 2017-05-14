@@ -25,4 +25,4 @@ class MovieHomePage extends Component {
   }
 }
 
-ReactDOM.render(<MovieHomePage />,document.getElementById('movie_root'))
+ReactDOM.render(<MovieHomePage />,document.getElementById('movie_home_root'))

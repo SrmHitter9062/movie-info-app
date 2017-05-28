@@ -5,8 +5,8 @@
   </head>
   <body>
     <h1>Movie page </h1>
-    <div id="movie_home_root"></div>
+    <div id="movie_root"></div>
 
-    <script type="text/javascript" src="/build/bundle.js"></script>
+    <script type="javascript" src="/build/bundle.js"></script>
   </body>
 </html>

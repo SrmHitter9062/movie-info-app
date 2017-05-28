@@ -1,6 +1,7 @@
 import React,{ Component } from 'react'
 import ReactDOM from 'react-dom'
 import Home from './components/layout/Home'
+import MovieHome from './components/layout/MovieHome'
 
 class App extends Component {
   render(){
@@ -18,10 +19,10 @@ class MovieHomePage extends Component {
   render(){
     return (
       <div>
-        <Home />
+        <MovieHome />
       </div>
     )
   }
 }
 
-ReactDOM.render(<MovieHomePage />,document.getElementById('movie_home_root'))
+ReactDOM.render(<MovieHomePage />,document.getElementById('movie_root'))

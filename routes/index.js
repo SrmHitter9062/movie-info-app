@@ -12,6 +12,9 @@ router.get('/createzone', function(req, res, next) {
 router.get('/createcomment', function(req, res, next) {
   res.render('createcomment', null);
 });
+router.get('/createmoviename',function(req,res,next){
+  res.render('createMovieName',{title:"movie page"});
+});
 router.get('/movies',function(req,res,next){
   var metaObj = {
     title:'movies'

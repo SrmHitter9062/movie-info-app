@@ -1,9 +1,11 @@
 var mongoose = require("mongoose");
 
 var MovieNameSchema = new mongoose.Schema({
-  movieName:{type:"string",default:""},
+  movieName:{type:String,required:true},
   createdAt : {type:Date,default : Date.now},
-  hasMovieData:{type:"string",default:"no"}
+  hasMovieData:{type:String,default:"no"}
 })
+
+MovieNameSchema.index({movieName:1},{unique:true});// unique index is created for this field. see (db.db_name.getIndexes())
 
 module.exports = mongoose.model("MovieNameSchema",MovieNameSchema);

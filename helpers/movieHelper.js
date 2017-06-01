@@ -1,7 +1,8 @@
 var MovieName = require('../models/MovieName')
 var mongoose = require('mongoose')
 mongoose.Promise = require('bluebird');
-var dbUrl = 'mongodb://localhost:27017/movie-info-app'
+var configDb = require('../config/config-db')();
+var dbUrl = configDb.dbUrl.mongoCloudUrl;
 mongoose.connect(dbUrl,function(err,res){
   if(err){
     console.log('db connection failed in movie helper: '+err);

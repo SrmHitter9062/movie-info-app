@@ -5,13 +5,15 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose')
-var dbUrl = 'mongodb://localhost:27017/movie-info-app'
+mongoose.Promise = require('bluebird');
+var configDb = require('./config/config-db')();
+var dbUrl = configDb.dbUrl.mongoCloudUrl;
 mongoose.connect(dbUrl,function(err,res){
   if(err){
-    console.log('db connection failed: '+err);
+    console.log('db connection failed in app.js: '+err);
   }
   else{
-    console.log('db connection success: '+dbUrl);
+    console.log('db connection success in app.js: '+dbUrl);
   }
 })
 
@@ -49,6 +51,7 @@ app.use(function(req, res, next) {
 app.use(function(err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
+  console.log('here ', err.message);
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
   // render the error page

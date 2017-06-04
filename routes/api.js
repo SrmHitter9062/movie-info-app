@@ -70,8 +70,8 @@ router.get('/:resource/:id',function(req,res,next){
 
 router.post('/:resource',function(req,res,next){
   var resource = req.params.resource
-  console.log('data is ',req.body);
   // req.body.zipCodes = req.body.zipCodes.split(',');
+  console.log('resource is ', resource);
   var controller = controllers[resource];
   /* if controller does not exists*/
    if(controller == null){
@@ -81,7 +81,7 @@ router.post('/:resource',function(req,res,next){
      })
      return
    }
-
+  console.log("req body is ",req.body);
   controller.create(req.body,function(err,result){
     if(err){
       res.json({

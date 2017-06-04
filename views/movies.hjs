@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title> {{title}}</title>
+  </head>
+  <body>
+    <h1>Movie page </h1>
+    <div id="movie_root"></div>
+
+    <script type="javascript" src="/build/bundle.js"></script>
+  </body>
+</html>

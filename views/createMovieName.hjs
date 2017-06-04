@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title> {{title}}</title>
+  </head>
+  <body>
+    <h1> Insert movie</h1>
+    <form action='/api/moviename' method="post">
+      <input type="text" name="movieName" placeholder="movie name"/><br />
+      <input type='submit' value='Create movie name'>
+
+    </form>
+    <script type="text/javascript" src="/build/bundle.js"></script>
+  </body>
+</html>

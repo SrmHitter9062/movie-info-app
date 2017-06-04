@@ -83,7 +83,6 @@
 	      return _react2.default.createElement(
 	        'div',
 	        null,
-	        'Hello React!!',
 	        _react2.default.createElement(_Home2.default, null)
 	      );
 	    }
@@ -93,6 +92,31 @@
 	}(_react.Component);
 
 	_reactDom2.default.render(_react2.default.createElement(App, null), document.getElementById('root'));
+
+	var MovieHomePage = function (_Component2) {
+	  _inherits(MovieHomePage, _Component2);
+
+	  function MovieHomePage() {
+	    _classCallCheck(this, MovieHomePage);
+
+	    return _possibleConstructorReturn(this, (MovieHomePage.__proto__ || Object.getPrototypeOf(MovieHomePage)).apply(this, arguments));
+	  }
+
+	  _createClass(MovieHomePage, [{
+	    key: 'render',
+	    value: function render() {
+	      return _react2.default.createElement(
+	        'div',
+	        null,
+	        _react2.default.createElement(_Home2.default, null)
+	      );
+	    }
+	  }]);
+
+	  return MovieHomePage;
+	}(_react.Component);
+
+	_reactDom2.default.render(_react2.default.createElement(MovieHomePage, null), document.getElementById('movie_home_root'));
 
 /***/ }),
 /* 1 */

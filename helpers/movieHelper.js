@@ -2,7 +2,7 @@ var MovieName = require('../models/MovieName')
 var MovieData = require('../models/MovieData')
 var apiManager = require('./apiManager')
 var mongoose = require('mongoose')
-mongoose.Promise = require('bluebird');
+var Promise = require('bluebird');
 var configDb = require('../config/config-db')();
 var dbUrl = configDb.dbUrl.mongoCloudUrl;
 mongoose.connect(dbUrl,function(err,res){
@@ -31,54 +31,151 @@ module.exports = {
       })
     }
   },
-  insertMovieData:function(){
-    var params = {
+  getMovieNamData:function(){ // 30 done
+    var skp =42;
+    var lim =2;
+    MovieName.find({},"movieName",(err,data)=>{
+      if(err){
+        console.log("mvoie name GET ERROR");
+        return;
+      }
+      console.log("movie name GET SUCCESS ");
+      this.insertMovieData(data);
+    }).skip(skp).limit(lim);
+
+  },
+  insertMovieData:function(movieNameInfo){
+    // console.log("movieNameData : ",movieNameInfo)
+    var searchMoviePromises = this.getSearchMoviePromises(movieNameInfo);
+    // parellel execution of searhc movie details
+    Promise.settle(searchMoviePromises).then((searchResults)=>{ // Promise1
+      searchResults.forEach((sResult)=>{ // for every movie search result
+        if(sResult.isFulfilled()){
+          console.log("SEARCH SUCCESS ");
+          var res = sResult._settledValue.results;
+          var movieIdList = [];
+          for(var i = 0;i < res.length;i++){
+            movieIdList.push(res[i].id);
+          }
+          if(movieIdList.length){
+            console.log("movie ids count: ",movieIdList.length);
+            var movideDetailsParams = {
+              api_key:"1c0237c93183cfebcb09c14c7a08ec34",
+              language:"en-US"
+            }
+            var getMovieIdPromises = this.getMovieIdPromises(movieIdList);
+            // parallel call for all movie ids
+            Promise.settle(getMovieIdPromises).then((results)=>{ // Promise 2
+              var movieApiData = [];
+              results.forEach((res,index)=>{
+                if(res.isFulfilled()){
+                  var movieDetail = this.getMovieDetail(res._settledValue);
+                  movieApiData.push(movieDetail);
+                }else{
+                  console.log("MOVIE GET ID ERROR ", res.id , " ERROR : ",res._settledValue);
+                }
+              })
+              var saveMIdsPromises = this.getMIdsPromisesForCreate(movieApiData);
+              // parallel saving the movie data in db
+              var saveTime1 = new Date().getTime() / 1000;
+              Promise.settle(saveMIdsPromises).then(function(results){ // Promise 3
+                var saveCount = 0;
+                results.forEach((item)=>{
+                  if(item.isFulfilled()){
+                    saveCount += 1;
+                    console.log("CREATION SUCCESS , ",item._settledValue.movie_name);
+                  }else{
+                    console.log("CREATION ERROR , ",item._settledValue.message);
+                  }
+                })
+                console.log("SAVE COUNT :",saveCount)
+                var saveTime2 = new Date().getTime() / 1000;
+                console.log("Total movie data saving time ",saveTime2-saveTime1);
+              })
+            })
+          }else{
+            console.log("search result zero")
+          }
+        }else{
+          console.log("SEARCH ERROR ",sResult._settledValue.message);
+        }
+      })
+   })
+
+  },
+  getSearchMoviePromises:function(movieNameInfo){
+    var promises = [];
+    var requestObj = {
+      urlType:"tmdb",
+      host:"https://api.themoviedb.org/3",
+    }
+    for(var j = 0;j < movieNameInfo.length;j++){
+      var params = {
+        api_key:"1c0237c93183cfebcb09c14c7a08ec34",
+        language:"en-US",
+        query : movieNameInfo[j].movieName,
+        page:1
+      }
+      var prm = new Promise(function(resolve,reject){
+        apiManager.makeApiCall("/search/movie","GET",params,requestObj,(resp)=>{
+          resolve(resp);
+        },(err)=>{
+          reject(err);
+        })
+      })
+      promises.push(prm);
+    }
+    return promises;
+  },
+  getMovieIdPromises:function(movieIds){
+    var promises = [];
+    var movideDetailsParams = {
       api_key:"1c0237c93183cfebcb09c14c7a08ec34",
-      language:"en-US",
-      query : "sultan",
-      page:1
+      language:"en-US"
     }
     var requestObj = {
       urlType:"tmdb",
       host:"https://api.themoviedb.org/3",
     }
-    var movieIdList = [];
-    var movieListCreationError = [];
-    apiManager.makeApiCall("/search/movie","GET",params,requestObj,(resp)=>{
-      console.log("SEARCH SUCCESS");
-      var res = resp.results;
-      for(var i = 0;i < res.length;i++){
-        movieIdList.push(res[i].id);
-      }
-      console.log("movie id list : ",movieIdList);
-      // make api call for movie detail
-      if(movieIdList.length){
-        var movideDetailsParams = {
-          api_key:"1c0237c93183cfebcb09c14c7a08ec34",
-          language:"en-US"
-        }
-        for(var i = 0;i < movieIdList.length;i++){
-          apiManager.makeApiCall("/movie/"+movieIdList[i],"GET",movideDetailsParams,requestObj,(resp)=>{
-            console.log("GET SUCCESS : ",resp.id);
-            var movieDetail = this.getMovieDetail(resp);
-            var newMovieDetail = new MovieData(movieDetail);
-            //saving movie data in db
-            newMovieDetail.save(newMovieDetail,(err,resp)=>{
-              if(err){
-                console.log("CREATION ERROR");
-                movieListCreationError.push(movieIdList[i])
-                return;
-              }
-              console.log("CREATION SUCCESS");
-            })
-          },(err)=>{
-            console.log("GET ERROR");
-          })
-        }
-      }
+    for(var i = 0;i < movieIds.length;i++){
+      var prm = new Promise(function(resolve,reject){
+        apiManager.makeApiCall("/movie/"+movieIds[i],"GET",movideDetailsParams,requestObj,(resp)=>{
+          resolve(resp);
+        },(err)=>{
+          reject(err);
+        });
+      });
+      // prm = Promise.resolve("YES");
+      promises.push(prm);
+    }
+    return promises;
 
-    },(err)=>{
-      console.log("SEARCH ERROR: ",err);
+  },
+  getMIdsPromisesForCreate:function(movieApiDataList){
+    var promises = [];
+    movieApiDataList.forEach((data)=>{
+      var newMovieDetail = new MovieData(data);
+      var prm = new Promise((resolve,reject)=>{
+        newMovieDetail.save((err,resp)=>{
+          if(err){
+            reject(err)
+          }
+          resolve(resp);
+        })
+
+      })
+      promises.push(prm);
+    })
+    return promises;
+
+  },
+  updateMovieNameDb:function(movieName,mId){
+    MovieName.update({movieName : movieName},{hasMovieData:"yes",movieId:mId},(err,resp)=>{
+      if(err){
+        console.log("UPDATE ERROR IN MOVIENAME")
+        return;
+      }
+      console.log("UPDATE SUCCESS IN MOVIENAME")
     })
 
   },
@@ -143,6 +240,44 @@ module.exports = {
     }
     return movieDetail;
 
+  },
+  testFunction(){
+    var movieIds = ["307831","174445","280342","46800"];
+    var promises = [];
+    var movideDetailsParams = {
+      api_key:"1c0237c93183cfebcb09c14c7a08ec34",
+      language:"en-US"
+    }
+    var requestObj = {
+      urlType:"tmdb",
+      host:"https://api.themoviedb.org/3",
+    }
+    for(var i = 0;i < movieIds.length;i++){
+      var prm = new Promise(function(resolve,reject){
+        apiManager.makeApiCall("/movie/"+movieIds[i],"GET",movideDetailsParams,requestObj,(resp)=>{
+          resolve(resp);
+        },(err)=>{
+          reject(err);
+        });
+      });
+      // prm = Promise.resolve("YES");
+      promises.push(prm);
+    }
+    // console.log("promise objects ",promises)
+    var s1 = new Date().getTime() / 1000;
+    Promise.settle(promises).then((results)=>{
+      results.forEach((res,index)=>{
+        if(res.isFulfilled()){
+          console.log("success result is ",res.id);
+        }else{
+          console.log("error result is ",res._settledValue);
+        }
+      })
+      var s2 = new Date().getTime() / 1000;
+      console.log("total time ",s2-s1);
+    }).catch((err)=>{
+      console.log("rejected promise ",err);
+    })
   },
   movieList:[
     {

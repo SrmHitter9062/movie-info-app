@@ -16,7 +16,6 @@ module.exports = {
       json:true,
       timeout : 300000
     };
-    // console.log("options before api call are :",options);
     this.apiRequestCall(options,successCb,errorCb);
 
   },
@@ -26,6 +25,7 @@ module.exports = {
         console.log("error is ",err.message)
         errorCb({error:err.message});
       }
+      // console.log("optins and resp status code ",options , " " ,resp.statusCode)
       if(resp && resp.statusCode == 200){
         successCb(body)
       }else{

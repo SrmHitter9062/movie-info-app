@@ -31,26 +31,108 @@ module.exports = {
       })
     }
   },
-  getMovieNamData:function(){ // 30 done
-    var skp =42;
-    var lim =2;
+  getMovieNamData:function(){ // 1000 done
+    var skp =970;
+    var lim =30;
     MovieName.find({},"movieName",(err,data)=>{
       if(err){
-        console.log("mvoie name GET ERROR");
+        console.log("mvoie name GET ERROR from DB");
         return;
       }
-      console.log("movie name GET SUCCESS ");
-      this.insertMovieData(data);
+      console.log("movie name GET SUCCESS From DB ");
+      this.insertMovieDataCopy(data);
     }).skip(skp).limit(lim);
 
+  },
+  insertMovieDataCopy:function(movieNameInfo){
+    var EmptyPromise = Promise.resolve();
+    var searchMoviePromises = this.getSearchMoviePromises(movieNameInfo);
+    var searchTime1 = new Date().getTime() / 1000;
+    Promise.settle(searchMoviePromises).then((searchResults)=>{
+      var searchTime2 = new Date().getTime() / 1000;
+      console.log("TIME - IN all sent movies search : ",searchTime2-searchTime1 , "\n");
+      //serial execution for every search movie data
+      var allPromises = searchResults.reduce((EmptyPromise,sResult)=>{
+        if(sResult.isFulfilled()){
+          return EmptyPromise.then(()=>{
+            var ProcessingTime1 = new Date().getTime() / 1000;
+            console.log("\nSEARCH SUCCESS");
+            var res = sResult._settledValue.results;
+            var movieIdList = [];
+            for(var i = 0;i < res.length;i++){
+              movieIdList.push(res[i].id);
+            }
+            // promise for processing a search result
+            return this.processSearchResult(movieIdList).then((resp)=>{
+              var ProcessingTime2 = new Date().getTime() / 1000;
+              console.log('TIME: - processing(get movies + save movies) of search movies result : ',ProcessingTime2-ProcessingTime1);
+            })
+          }).catch((err)=>{
+            console.log("Error in PROCESSING A MOVIE SEARCH RESULT , ",err)
+          })
+        }else{
+          console.log("SEARCH ERROR")
+        }
+
+      },Promise.resolve());
+    })
+
+  },
+  processSearchResult:function(movieIdList){
+    return new Promise((resolve,reject)=>{
+      if(movieIdList.length){
+        console.log("movie ids count: ",movieIdList.length);
+        var movideDetailsParams = {
+          api_key:"1c0237c93183cfebcb09c14c7a08ec34",
+          language:"en-US"
+        }
+        var getMovieIdPromises = this.getMovieIdPromises(movieIdList);
+        // parallel call for all movie ids
+        Promise.settle(getMovieIdPromises).then((results)=>{ // Promise 2
+          var movieApiData = [];
+          results.forEach((res,index)=>{
+            if(res.isFulfilled()){
+              var movieDetail = this.getMovieDetail(res._settledValue);
+              movieApiData.push(movieDetail);
+            }else{
+              console.log("MOVIE GET ID ERROR ", res.id , " ERROR : ",res._settledValue);
+            }
+          })
+          var saveMIdsPromises = this.getMIdsPromisesForCreate(movieApiData);
+          // parallel saving the movie data in db
+          var saveTime1 = new Date().getTime() / 1000;
+          Promise.settle(saveMIdsPromises).then(function(results){ // Promise 3
+            var saveCount = 0;
+            results.forEach((item)=>{
+              if(item.isFulfilled()){
+                saveCount += 1;
+                console.log("CREATION MOVIE DATA SUCCESS , ",item._settledValue.movie_name);
+              }else{
+                console.log("CREATION MOVIE DATA ERROR , ",item._settledValue.message);
+              }
+            })
+            console.log("db saving count :",saveCount)
+            var saveTime2 = new Date().getTime() / 1000;
+            console.log("TIME - db saving all movie of a search : ",saveTime2-saveTime1);
+            resolve("success");
+          })
+        })
+      }else{
+        console.log("search result zero")
+        resolve("zeroSearchResult")
+      }
+
+    })
   },
   insertMovieData:function(movieNameInfo){
     // console.log("movieNameData : ",movieNameInfo)
     var searchMoviePromises = this.getSearchMoviePromises(movieNameInfo);
     // parellel execution of searhc movie details
     Promise.settle(searchMoviePromises).then((searchResults)=>{ // Promise1
+      //serial execution for all search results
       searchResults.forEach((sResult)=>{ // for every movie search result
         if(sResult.isFulfilled()){
+          // new promise
           console.log("SEARCH SUCCESS ");
           var res = sResult._settledValue.results;
           var movieIdList = [];
@@ -252,32 +334,88 @@ module.exports = {
       urlType:"tmdb",
       host:"https://api.themoviedb.org/3",
     }
-    for(var i = 0;i < movieIds.length;i++){
-      var prm = new Promise(function(resolve,reject){
-        apiManager.makeApiCall("/movie/"+movieIds[i],"GET",movideDetailsParams,requestObj,(resp)=>{
-          resolve(resp);
-        },(err)=>{
-          reject(err);
-        });
-      });
-      // prm = Promise.resolve("YES");
-      promises.push(prm);
-    }
-    // console.log("promise objects ",promises)
-    var s1 = new Date().getTime() / 1000;
-    Promise.settle(promises).then((results)=>{
-      results.forEach((res,index)=>{
-        if(res.isFulfilled()){
-          console.log("success result is ",res.id);
-        }else{
-          console.log("error result is ",res._settledValue);
-        }
+    var EmptyPromise = Promise.resolve();
+    var allPromises = movieIds.reduce((EmptyPromise,mId)=>{
+      return EmptyPromise.then(()=>{
+         return this.getMovieAsync(mId).then((resp)=>{
+          console.log("MOVIE DATA IS ",resp);
+        })
+      }).catch((err)=>{
+        console.log("error in getting movie data")
       })
-      var s2 = new Date().getTime() / 1000;
-      console.log("total time ",s2-s1);
-    }).catch((err)=>{
-      console.log("rejected promise ",err);
-    })
+    },Promise.resolve());
+    //for printing all promise results
+    // allPromises.then(()=>{
+    //   console.log("all promises are ",listof successful promises);
+    // })
+
+    // for(var i = 0;i < movieIds.length;i++){
+    //   if(i == 1){
+    //     var prm = new Promise(function(resolve,reject){
+    //       apiManager.makeApiCall("/moviee/"+movieIds[i],"GET",movideDetailsParams,requestObj,(resp)=>{
+    //         resolve(resp);
+    //       },(err)=>{
+    //         reject(err);
+    //       });
+    //     });
+    //   }else{
+    //     var prm = new Promise(function(resolve,reject){
+    //       apiManager.makeApiCall("/movie/"+movieIds[i],"GET",movideDetailsParams,requestObj,(resp)=>{
+    //         resolve(resp);
+    //       },(err)=>{
+    //         reject(err);
+    //       });
+    //     });
+    //   }
+    //
+    //   // prm = Promise.resolve("YES");
+    //   promises.push(prm);
+    // }
+    // console.log("promise objects ",promises)
+    /* sequential execution*/
+    // Promise.all(promises.map((pr)=>{
+    //   var res = pr.reflect();
+    // })).each(function(inspection) {
+    //   if (inspection.isFulfilled()) {
+    //       console.log("A promise in the array was fulfilled with", inspection.value());
+    //   } else {
+    //       console.error("A promise in the array was rejected with", inspection.reason());
+    //   }
+    // })
+    // OR
+
+    var s1 = new Date().getTime() / 1000;
+    // Promise.settle(promises).then((results)=>{
+    //   results.forEach((res,index)=>{
+    //     if(res.isFulfilled()){
+    //       console.log("success result is ",res.id);
+    //     }else{
+    //       console.log("error result is ",res._settledValue);
+    //     }
+    //   })
+    //   var s2 = new Date().getTime() / 1000;
+    //   console.log("total time ",s2-s1);
+    // }).catch((err)=>{
+    //   console.log("rejected promise ",err);
+    // })
+  },
+  getMovieAsync:function(mId){
+    var movideDetailsParams = {
+      api_key:"1c0237c93183cfebcb09c14c7a08ec34",
+      language:"en-US"
+    }
+    var requestObj = {
+      urlType:"tmdb",
+      host:"https://api.themoviedb.org/3",
+    }
+    return new Promise(function(resolve,reject){
+      apiManager.makeApiCall("/movie/"+mId,"GET",movideDetailsParams,requestObj,(resp)=>{
+        resolve(resp);
+      },(err)=>{
+        reject(err);
+      });
+    });
+
   },
   movieList:[
     {

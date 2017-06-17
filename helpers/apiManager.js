@@ -29,7 +29,7 @@ module.exports = {
       if(resp && resp.statusCode == 200){
         successCb(body)
       }else{
-        errorCb({error:"network error"})
+        errorCb({error:"network error "})
       }
     })
     // var req;

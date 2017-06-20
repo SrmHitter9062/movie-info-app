@@ -29,3 +29,7 @@ mongodb://SrmHitter9062:<PASSWORD>@srm-mongo-cloud-shard-00-00-tw5ax.mongodb.net
 
 3)import your local database to mongo cloud:
 mongorestore --db <DBNAME> --ssl --host srm-mongo-cloud-shard-0/srm-mongo-cloud-shard-00-00-tw5ax.mongodb.net:27017,srm-mongo-cloud-shard-00-01-tw5ax.mongodb.net:27017,srm-mongo-cloud-shard-00-02-tw5ax.mongodb.net:27017 --authenticationDatabase admin --dir=dump/<DBNAME> -u <USERNAME> --password <PASSWORD>
+
+4) dump your db from mongo atlas cloude to your local machin:
+
+mongodump --db <DBNAME> --ssl --host srm-mongo-cloud-shard-0/srm-mongo-cloud-shard-00-00-tw5ax.mongodb.net:27017,srm-mongo-cloud-shard-00-01-tw5ax.mongodb.net:27017,srm-mongo-cloud-shard-00-02-tw5ax.mongodb.net:27017 --authenticationDatabase admin --dir=dump/<DBNAME> -u <USERNAME> --password <PASSWORD>

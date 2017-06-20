@@ -3,8 +3,17 @@ var router = express.Router()
 var ZoneController = require("../controllers/ZoneController")
 var controllers = require('../controllers')
 
-router.get('/getMovies',function(req,res,next){
-  // console.log("your query is ",req)
+router.get('/:resource/get_movie_by_id',function(req,res,next){
+  console.log("your query is ",req.query)
+  var resource = req.params.resource;
+  var controller = controllers[resource];
+  if(controller == null){
+    res.json({
+      status:'failed',
+      message:'Invalid Resource request : '+resource
+    })
+    return;
+  }
   res.json({
     confirmation : 'success',
     data : {'movies':[]}

@@ -32,7 +32,7 @@ module.exports = {
     }
   },
   getMovieNamData:function(){ // 1000 done
-    var skp =970;
+    var skp =1560;
     var lim =30;
     MovieName.find({},"movieName",(err,data)=>{
       if(err){

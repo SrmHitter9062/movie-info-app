@@ -33,3 +33,22 @@ mongorestore --db <DBNAME> --ssl --host srm-mongo-cloud-shard-0/srm-mongo-cloud-
 4) dump your db from mongo atlas cloude to your local machin:
 
 mongodump --db <DBNAME> --ssl --host srm-mongo-cloud-shard-0/srm-mongo-cloud-shard-00-00-tw5ax.mongodb.net:27017,srm-mongo-cloud-shard-00-01-tw5ax.mongodb.net:27017,srm-mongo-cloud-shard-00-02-tw5ax.mongodb.net:27017 --authenticationDatabase admin --dir=dump/<DBNAME> -u <USERNAME> --password <PASSWORD>
+
+
+#run elasticsearch
+$ elasticsearch
+#check indexes in elasticsearch
+$ curl -XGET http://localhost:9200/_aliases
+#health check(of elastic cluster)
+$  curl -XGET http://localhost:9200/_cluster/health?pretty=true' or in enter    http://localhost:9200/_cluster/health?pretty=true' in browser
+
+# index setting check (i.e. no of nodes,shards,replicas)
+$ curl -XGET http://localhost:9200/_settings?pretty=true or http://localhost:9200/_settings?pretty=true in browser
+# index setting update in elasticsearch
+$ curl -XPUT 'localhost:9200/indexName/_settings' -d '
+{
+  "index" : {
+    "number_of_shards": 2 ,
+    "number_of_replicas" : 4
+  }
+}'

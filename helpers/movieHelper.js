@@ -31,8 +31,8 @@ module.exports = {
       })
     }
   },
-  getMovieNamData:function(){ // 1000 done
-    var skp =1560;
+  getMovieNamData:function(){ // 1700 done
+    var skp =2120;
     var lim =30;
     MovieName.find({},"movieName",(err,data)=>{
       if(err){
@@ -343,61 +343,7 @@ module.exports = {
       }).catch((err)=>{
         console.log("error in getting movie data")
       })
-    },Promise.resolve());
-    //for printing all promise results
-    // allPromises.then(()=>{
-    //   console.log("all promises are ",listof successful promises);
-    // })
-
-    // for(var i = 0;i < movieIds.length;i++){
-    //   if(i == 1){
-    //     var prm = new Promise(function(resolve,reject){
-    //       apiManager.makeApiCall("/moviee/"+movieIds[i],"GET",movideDetailsParams,requestObj,(resp)=>{
-    //         resolve(resp);
-    //       },(err)=>{
-    //         reject(err);
-    //       });
-    //     });
-    //   }else{
-    //     var prm = new Promise(function(resolve,reject){
-    //       apiManager.makeApiCall("/movie/"+movieIds[i],"GET",movideDetailsParams,requestObj,(resp)=>{
-    //         resolve(resp);
-    //       },(err)=>{
-    //         reject(err);
-    //       });
-    //     });
-    //   }
-    //
-    //   // prm = Promise.resolve("YES");
-    //   promises.push(prm);
-    // }
-    // console.log("promise objects ",promises)
-    /* sequential execution*/
-    // Promise.all(promises.map((pr)=>{
-    //   var res = pr.reflect();
-    // })).each(function(inspection) {
-    //   if (inspection.isFulfilled()) {
-    //       console.log("A promise in the array was fulfilled with", inspection.value());
-    //   } else {
-    //       console.error("A promise in the array was rejected with", inspection.reason());
-    //   }
-    // })
-    // OR
-
-    var s1 = new Date().getTime() / 1000;
-    // Promise.settle(promises).then((results)=>{
-    //   results.forEach((res,index)=>{
-    //     if(res.isFulfilled()){
-    //       console.log("success result is ",res.id);
-    //     }else{
-    //       console.log("error result is ",res._settledValue);
-    //     }
-    //   })
-    //   var s2 = new Date().getTime() / 1000;
-    //   console.log("total time ",s2-s1);
-    // }).catch((err)=>{
-    //   console.log("rejected promise ",err);
-    // })
+    },Promise.resolve());    
   },
   getMovieAsync:function(mId){
     var movideDetailsParams = {

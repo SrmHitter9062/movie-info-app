@@ -2,22 +2,48 @@ var express = require("express")
 var router = express.Router()
 var ZoneController = require("../controllers/ZoneController")
 var controllers = require('../controllers')
+var validationHelper = require('../helpers/validationHelper');
 
-router.get('/:resource/get_movie_by_id',function(req,res,next){
-  console.log("your query is ",req.query)
-  var resource = req.params.resource;
-  var controller = controllers[resource];
-  if(controller == null){
+/*movie details by id api*/
+router.get('/movie/get_movie_by_id',function(req,res,next){
+  var queryString = req.query || {};
+  var controller = controllers['movie'];
+  var validationResult = validationHelper.validateGetMovieByIdApiQueryParams(req.query);  
+  if(validationResult.validation == false){
     res.json({
-      status:'failed',
-      message:'Invalid Resource request : '+resource
+      status:'fail',
+      message: 'Invalid or missing query params'
     })
-    return;
+    return
   }
-  res.json({
-    confirmation : 'success',
-    data : {'movies':[]}
+  controller.find(validationResult.queryObj,function(err,resp){
+    if(err){
+      res.json({
+        status:'fail',
+        message:"NOT FOUND"
+      })
+      return
+    }
+    // do anything with response if needed
+    res.json({
+      status : 'success',
+      results : resp
+    })
   })
+})
+/* movie search by text api */
+router.get('/get_movie_by_search',function(req,res,next){
+  var controller = controllers['movie'];
+  var validationResult = validationHelper.validateGetMovieBySearchQueryParams(req.query);
+  if(validationResult.validation == false){
+    res.json({
+      status:'fail',
+      message:"Invalid or missing query params"
+    })
+  }
+
+
+
 })
 
 router.get('/:resource',function(req,res,next){

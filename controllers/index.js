@@ -1,10 +1,10 @@
 var ZoneController = require('./ZoneController')
 var CommentController = require('./CommentController')
 var MovieNameController = require('./MovieNameController')
-var MovieDataControoler = require('./MovieDataController');
+var MovieDataController = require('./MovieDataController');
 module.exports = {
   comment:CommentController,
   zone:ZoneController,
   moviename:MovieNameController,
-  movie:MovieDataControoler
+  movie:MovieDataController
 }

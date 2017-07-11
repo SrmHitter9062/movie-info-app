@@ -3,7 +3,8 @@ var path = require('path');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
+var bodyParser = require('body-parser')
+var elastic = require("./services/elasticSearch");
 var mongoose = require('mongoose')
 mongoose.Promise = require('bluebird');
 var configDb = require('./config/config-db')();
@@ -46,6 +47,15 @@ app.use(function(req, res, next) {
   err.status = 404;
   next(err);
 });
+
+elastic.isIndexExists().then(function(exists){
+  if(exists){
+    console.log("index exists");
+  }else{
+    console.log("index does not exist and creating...");
+    elastic.createIndex();
+  }
+})
 
 // error handler
 app.use(function(err, req, res, next) {

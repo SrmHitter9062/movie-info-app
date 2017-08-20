@@ -47,13 +47,15 @@ app.use(function(req, res, next) {
   err.status = 404;
   next(err);
 });
-
-elastic.isIndexExists().then(function(exists){
+// check if movies index is present or not
+elastic.isIndexExists("movies").then(function(exists){
   if(exists){
-    console.log("index exists");
+    console.log("es movie index exists");
+    // elastic.deleteIndex("movies");
   }else{
     console.log("index does not exist and creating...");
-    elastic.createIndex();
+    elastic.createMovieIndex(); // default index is movies
+    console.log("index created");
   }
 })
 

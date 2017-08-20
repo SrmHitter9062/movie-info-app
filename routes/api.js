@@ -3,12 +3,16 @@ var router = express.Router()
 var ZoneController = require("../controllers/ZoneController")
 var controllers = require('../controllers')
 var validationHelper = require('../helpers/validationHelper');
+var elasticSearch = require('../services/elasticSearch');
 
-/*movie details by id api*/
+/*movie details by id api=>
+ pathname - api/movie/get_movie_by_id
+ queryParams - movie_id=[307831]
+ */
 router.get('/movie/get_movie_by_id',function(req,res,next){
   var queryString = req.query || {};
   var controller = controllers['movie'];
-  var validationResult = validationHelper.validateGetMovieByIdApiQueryParams(req.query);  
+  var validationResult = validationHelper.validateGetMovieByIdApiQueryParams(req.query);
   if(validationResult.validation == false){
     res.json({
       status:'fail',
@@ -41,6 +45,19 @@ router.get('/get_movie_by_search',function(req,res,next){
       message:"Invalid or missing query params"
     })
   }
+  console.log('validationResult ',validationResult);
+  elasticSearch.getMovieSuggestion(validationResult.queryObj).then((res)=>{
+    res.json({
+      status:'success',
+      results:res
+    })
+
+  }).catch((err)=>{
+    res.json({
+      status:'fail',
+      message:'Error in getting suggetion'
+    })
+  })
 
 
 

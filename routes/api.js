@@ -36,7 +36,7 @@ router.get('/movie/get_movie_by_id',function(req,res,next){
   })
 })
 /* movie search by text api */
-router.get('/get_movie_by_search',function(req,res,next){
+router.get('/movie/get_movie_by_search',function(req,res,next){
   var controller = controllers['movie'];
   var validationResult = validationHelper.validateGetMovieBySearchQueryParams(req.query);
   if(validationResult.validation == false){
@@ -45,22 +45,23 @@ router.get('/get_movie_by_search',function(req,res,next){
       message:"Invalid or missing query params"
     })
   }
-  console.log('validationResult ',validationResult);
-  elasticSearch.getMovieSuggestion(validationResult.queryObj).then((res)=>{
+  elasticSearch.getMovieSuggestion(validationResult.queryObj.movie_name).then((esRecords)=>{
+    var results = esRecords.hits.hits||[];
+    var movies = [];
+    for(var i = 0;i < results.length;i++){
+      movies.push(results[i]._source.suggest.payload);
+    }
     res.json({
       status:'success',
-      results:res
+      results:movies,
+      count:movies.length
     })
-
   }).catch((err)=>{
     res.json({
       status:'fail',
       message:'Error in getting suggetion'
     })
   })
-
-
-
 })
 
 router.get('/:resource',function(req,res,next){

@@ -29,6 +29,58 @@ $ curl -XPUT 'http://localhost:9200/indexName/_mapping/typeName' -d '
 }
 '
 
+# DELETE A TYPE IN A INDEX:
+$ curl -XDELETE 'localhost:9200/IndexName/typeName'
+ref - https://chartio.com/resources/tutorials/how-to-delete-data-from-elasticsearch/
+
+# DELETE A DOCUMENT IN A TYPE:
+curl -XDELETE 'localhost:9200/IndexName/typeName/1' (This will delete the document with an ID of 1)
 
 # issues :
  1) in completion suggester - https://github.com/elastic/elasticsearch/issues/6444#issuecomment-64408912
+
+
+ # success response after adding data to index:
+
+ indexed -> { _index: 'movies',
+  _type: 'movie',
+  _id: 'AV4eXbLQYQb6aI96xv-E',
+  _version: 1,
+  result: 'created',
+  _shards: { total: 3, successful: 1, failed: 0 },
+  created: true }
+
+
+# GET RECORDS IN INDEX :
+ 1) http://localhost:9200/movies/_stats/indexing?types=movie
+ref - https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-stats.html OR
+2) http://localhost:9200/IndexName/TypeNamepe/_count -> http://localhost:9200/movies/movie/_count
+
+# GET ALL MAPPING :
+ - http://localhost:9200/_all/_mapping
+ - http://localhost:9200/_all/_mapping/typeName
+
+# GET RECORDS FROM ELASTCI SEARCH INDEX:
+http://localhost:9200/indexName/typeName/_search?pretty=true&size=limit
+(i.e - http://localhost:9200/movies/movie/_search?pretty=true&_source=movieName,suggest.input,suggest.payload&size=1)
+
+OR  (CAN BE USED FOR RETRIVING SELECTED FIELDS)
+
+curl -XGET 'http://localhost:9200/movies/movie/_search?pretty=true' -d '
+{
+    "query" : {
+        "match_all" : {}
+    },
+    "_source": ["movieName","suggest.input"]
+}'
+
+# DELETE ALL RECORDS FROM INDEX, TYPE
+- curl -XDELETE localhost:9200/indexName/typeName
+(i.e. curl -XDELETE localhost:9200/movies/movie)
+
+# DELETE RECORD FROM ES INDEX :
+ - curl -XDELETE localhost:9200/movies/movie/indexDocumentID
+
+
+# get Suggestions from es url :
+http://localhost:9200/movies/movie/_search?q=movieName:Sultan

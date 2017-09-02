@@ -1,7 +1,8 @@
 var elasticsearch = require('elasticsearch');
 var elasticClient = new elasticsearch.Client({
   host: "http://localhost:9200",
-  log:"info"
+  log:"info",
+  apiVersion:"5.5"
 });
 /*Elasticsearch automatically arranges the five primary shards split across the two nodes with one replica
 nodes:2
@@ -64,6 +65,7 @@ module.exports = {
     return elasticClient.index({
       index:"movies",
       type:"movie",
+      id:document._id, // for preventing duplicate insertion
       body:{
         movieName:document.movie_name,
         suggest:{
@@ -74,20 +76,25 @@ module.exports = {
       }
     })
   },
-  getMovieSuggestion:function(query){
-    console.log('here in getMovieSuggestion')
-    return elasticClient.suggest({
-      index:"movies",
+  getMovieSuggestion: function(input){
+    return elasticClient.search({
+      index: 'movies',
       type:"movie",
-      body : {
-        movieResults:{
-          text: query.movie_name,
-          completion:{
-            field : "suggeest",
-            fuzzy : true
+      body: {
+        query: {
+          match: {
+            movieName: input
           }
         }
       }
-    })
+    });
+    // OR
+    /*
+    return elasticClient.search({
+      index: "movies",
+      type:"movie",
+      q:"movieName:"+input
+    });
+    */
   }
 }

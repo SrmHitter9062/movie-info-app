@@ -9,14 +9,14 @@ var mongoose = require('mongoose')
 mongoose.Promise = require('bluebird');
 var configDb = require('./config/config-db')();
 var dbUrl = configDb.dbUrl.mongoCloudUrl;
-mongoose.connect(dbUrl,function(err,res){
-  if(err){
-    console.log('db connection failed in app.js: '+err);
-  }
-  else{
-    console.log('db connection success in app.js: '+dbUrl);
-  }
-})
+// mongoose.connect(dbUrl,function(err,res){
+//   if(err){
+//     console.log('db connection failed in app.js: '+err);
+//   }
+//   else{
+//     console.log('db connection success in app.js: '+dbUrl);
+//   }
+// })
 
 var index = require('./routes/index');
 var users = require('./routes/users');
@@ -47,13 +47,15 @@ app.use(function(req, res, next) {
   err.status = 404;
   next(err);
 });
-
-elastic.isIndexExists().then(function(exists){
+// check if movies index is present or not
+elastic.isIndexExists("movies").then(function(exists){
   if(exists){
-    console.log("index exists");
+    console.log("es movie index exists");
+    // elastic.deleteIndex("movies");
   }else{
     console.log("index does not exist and creating...");
-    elastic.createIndex();
+    elastic.createMovieIndex(); // default index is movies
+    console.log("index created");
   }
 })
 

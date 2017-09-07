@@ -1,14 +1,14 @@
 var elasticsearch = require('elasticsearch');
 var elasticClient = new elasticsearch.Client({
   host: "http://localhost:9200",
-  log:"info"
+  log:"info",
+  apiVersion:"5.5"
 });
 /*Elasticsearch automatically arranges the five primary shards split across the two nodes with one replica
 nodes:2
 shards:5
 replica:1(of every shard)
 */
-var indexName = "movies";
 /* check if elastic server is down*/
 elasticClient.ping({
   requestTimeout:3000
@@ -21,56 +21,80 @@ elasticClient.ping({
 });
 
 module.exports = {
-  isIndexExists:function(){
+  isIndexExists:function(index){
       return elasticClient.indices.exists({
-        index:indexName
+        index:index
       });
   },
-  createIndex:function(){
+  createMovieIndex:function(){
     return elasticClient.indices.create({
-      index:indexName,
-      // body : {
-      //   "settings" : {
-      //     "index" : {
-      //         "number_of_shards" : 5,
-      //         "number_of_replicas" : 2
-      //     }
-      //   }
-      // }
+      index:"movies",
+      body : {
+        "settings" : {
+          "index" : {
+              "number_of_shards" : 5,
+              "number_of_replicas" : 2
+          }
+        }
+      }
     });
+  },
+  deleteIndex:function(index){
+    return elasticClient.indices.delete({
+      index:index
+    });
+  },
+  createMovieMapping:function(){
+    return elasticClient.indices.putMapping({
+      index:"movies",
+      type:"movie",
+      body:{
+          properties:{
+            movieName : {type:"string"},
+            suggest:{
+              type:"completion",
+              analyzer:"simple",
+              search_analyzer:"simple",
+              payloads:true
+            }
+          }
+        }
+    })
+  },
+  addDataToMovieEsIndex:function(document){
+    return elasticClient.index({
+      index:"movies",
+      type:"movie",
+      id:document._id, // for preventing duplicate insertion
+      body:{
+        movieName:document.movie_name,
+        suggest:{
+          input : document.movie_name.split(" "), // array of words because want to match any word in movie name
+          output : document.movie_name,
+          payload : document
+        }
+      }
+    })
+  },
+  getMovieSuggestion: function(input){
+    return elasticClient.search({
+      index: 'movies',
+      type:"movie",
+      body: {
+        query: {
+          match: {
+            movieName: input
+          }
+        }
+      }
+    });
+    // OR
+    /*
+    return elasticClient.search({
+      index: "movies",
+      type:"movie",
+      q:"movieName:"+input
+    });
+    */
   }
-
 }
-
-
-  // deleteIndex:function(){
-  //   return elasticClient.indices.delete({
-  //     index:indexName
-  //   });
-  // },
-
-// exports.isIndexExists = isIndexExists;
-  // createMapping:function(){
-  //   return elasticClient.indices.putMapping({
-  //     index:indexName,
-  //     type:"movie",
-  //     body:{
-  //       properties:{
-  //         movie_name : {type:"string"},
-  //         suggest:{
-  //           type:"completion",
-  //           analyzer:"simple",
-  //           search_analyzer:"simple",
-  //           payloads:true
-  //         }
-  //       }
-  //     }
-  //   })
-  //
-  // },
-  // addDataToElasticIndex:function(document){
-  //
-  // },
-  // getSuggestion:function(){
-  //
-  // }

@@ -3,12 +3,16 @@ var router = express.Router()
 var ZoneController = require("../controllers/ZoneController")
 var controllers = require('../controllers')
 var validationHelper = require('../helpers/validationHelper');
+var elasticSearch = require('../services/elasticSearch');
 
-/*movie details by id api*/
+/*movie details by id api=>
+ pathname - api/movie/get_movie_by_id
+ queryParams - movie_id=[307831]
+ */
 router.get('/movie/get_movie_by_id',function(req,res,next){
   var queryString = req.query || {};
   var controller = controllers['movie'];
-  var validationResult = validationHelper.validateGetMovieByIdApiQueryParams(req.query);  
+  var validationResult = validationHelper.validateGetMovieByIdApiQueryParams(req.query);
   if(validationResult.validation == false){
     res.json({
       status:'fail',
@@ -32,7 +36,12 @@ router.get('/movie/get_movie_by_id',function(req,res,next){
   })
 })
 /* movie search by text api */
-router.get('/get_movie_by_search',function(req,res,next){
+
+/*movie search by query=>
+ pathname - api/movie/controllers
+ queryParams - query=sultan
+ */
+router.get('/movie/get_movie_by_search',function(req,res,next){
   var controller = controllers['movie'];
   var validationResult = validationHelper.validateGetMovieBySearchQueryParams(req.query);
   if(validationResult.validation == false){
@@ -41,9 +50,25 @@ router.get('/get_movie_by_search',function(req,res,next){
       message:"Invalid or missing query params"
     })
   }
-
-
-
+  elasticSearch.getMovieSuggestion(validationResult.queryObj.movie_name).then((esRecords)=>{
+    var results = esRecords.hits.hits||[];
+    /* start: for excluding the scoring of documents */
+    // var movies = [];
+    // for(var i = 0;i < results.length;i++){
+    //   movies.push(results[i]._source.suggest.payload);
+    // }
+    /* end: for excluding the scoring of documents */
+    res.json({
+      status:'success',
+      results:results,
+      count:results.length
+    })
+  }).catch((err)=>{
+    res.json({
+      status:'fail',
+      message:'Error in getting suggetion'
+    })
+  })
 })
 
 router.get('/:resource',function(req,res,next){

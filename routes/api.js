@@ -36,6 +36,11 @@ router.get('/movie/get_movie_by_id',function(req,res,next){
   })
 })
 /* movie search by text api */
+
+/*movie search by query=>
+ pathname - api/movie/controllers
+ queryParams - query=sultan
+ */
 router.get('/movie/get_movie_by_search',function(req,res,next){
   var controller = controllers['movie'];
   var validationResult = validationHelper.validateGetMovieBySearchQueryParams(req.query);
@@ -47,14 +52,16 @@ router.get('/movie/get_movie_by_search',function(req,res,next){
   }
   elasticSearch.getMovieSuggestion(validationResult.queryObj.movie_name).then((esRecords)=>{
     var results = esRecords.hits.hits||[];
-    var movies = [];
-    for(var i = 0;i < results.length;i++){
-      movies.push(results[i]._source.suggest.payload);
-    }
+    /* start: for excluding the scoring of documents */
+    // var movies = [];
+    // for(var i = 0;i < results.length;i++){
+    //   movies.push(results[i]._source.suggest.payload);
+    // }
+    /* end: for excluding the scoring of documents */
     res.json({
       status:'success',
-      results:movies,
-      count:movies.length
+      results:results,
+      count:results.length
     })
   }).catch((err)=>{
     res.json({

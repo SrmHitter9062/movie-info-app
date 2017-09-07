@@ -84,3 +84,12 @@ curl -XGET 'http://localhost:9200/movies/movie/_search?pretty=true' -d '
 
 # get Suggestions from es url :
 http://localhost:9200/movies/movie/_search?q=movieName:Sultan
+
+
+
+
+# ES scoring :
+ - uses lucene(software library used for information retrieval based on fuzzy search on edit distance) under the hood
+ref - https://www.compose.com/articles/how-scoring-works-in-elasticsearch/
+explaination -
+http://localhost:9200/movies/movie/280342/_explain?pretty=1&q=movieName=sultan [280342 - index record id]

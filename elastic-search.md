@@ -93,3 +93,20 @@ http://localhost:9200/movies/movie/_search?q=movieName:Sultan
 ref - https://www.compose.com/articles/how-scoring-works-in-elasticsearch/
 explaination -
 http://localhost:9200/movies/movie/280342/_explain?pretty=1&q=movieName=sultan [280342 - index record id]
+
+
+
+
+
+# suggesting document result (internal)
+example : query = mission impossible
+step 1 : get all matched docs
+        https://stackoverflow.com/questions/26394765/how-does-lucene-solr-elasticsearch-so-quickly-do-filtered-term-counts
+        https://nlp.stanford.edu/IR-book/html/htmledition/processing-boolean-queries-1.html#fig:postings-merge-algorithm
+        a) get list of documents for every term using invert indexing - O(N) where N - no. of records in es index
+        b) intersect of all list of documents  to get final matched documents - O(l1+l2+l3 + ..) where l1, l2 etc are length of lists
+step2 : relevance scoring
+      https://www.compose.com/articles/how-scoring-works-in-elasticsearch/
+      a) term frequency
+      b) inverse document frequency
+      c) field length normalization

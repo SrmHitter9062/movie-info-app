@@ -44,14 +44,19 @@ module.exports = {
     }).skip(skp).limit(lim);
 
   },
-  insertMovieDataCopy:function(movieNameInfo){
+  insertMovieDataCopy:function(movieNameInfo){ //final
     var EmptyPromise = Promise.resolve();
     var searchMoviePromises = this.getSearchMoviePromises(movieNameInfo);
     var searchTime1 = new Date().getTime() / 1000;
+    /*1 parallel call and return all promise's result with success or error
+    searchResults = [pResult1,pResult2,pResult3,pResult4,...]
+    */
     Promise.settle(searchMoviePromises).then((searchResults)=>{
       var searchTime2 = new Date().getTime() / 1000;
       console.log("TIME - IN all sent movies search : ",searchTime2-searchTime1 , "\n");
-      //serial execution for every search movie data
+      /*1 serial execution data(suggested movies) of every queried movie(searched by name)
+      2 for every searched movie there are suggestion so get ids and process them(get every movies data by id and save in db)
+       */
       var allPromises = searchResults.reduce((EmptyPromise,sResult)=>{
         if(sResult.isFulfilled()){
           return EmptyPromise.then(()=>{
@@ -63,6 +68,7 @@ module.exports = {
               movieIdList.push(res[i].id);
             }
             // promise for processing a search result
+            /* get all suggested movie information  and save in db*/
             return this.processSearchResult(movieIdList).then((resp)=>{
               var ProcessingTime2 = new Date().getTime() / 1000;
               console.log('TIME: - processing(get movies + save movies) of search movies result : ',ProcessingTime2-ProcessingTime1);
@@ -123,67 +129,6 @@ module.exports = {
       }
 
     })
-  },
-  insertMovieData:function(movieNameInfo){
-    // console.log("movieNameData : ",movieNameInfo)
-    var searchMoviePromises = this.getSearchMoviePromises(movieNameInfo);
-    // parellel execution of searhc movie details
-    Promise.settle(searchMoviePromises).then((searchResults)=>{ // Promise1
-      //serial execution for all search results
-      searchResults.forEach((sResult)=>{ // for every movie search result
-        if(sResult.isFulfilled()){
-          // new promise
-          console.log("SEARCH SUCCESS ");
-          var res = sResult._settledValue.results;
-          var movieIdList = [];
-          for(var i = 0;i < res.length;i++){
-            movieIdList.push(res[i].id);
-          }
-          if(movieIdList.length){
-            console.log("movie ids count: ",movieIdList.length);
-            var movideDetailsParams = {
-              api_key:"1c0237c93183cfebcb09c14c7a08ec34",
-              language:"en-US"
-            }
-            var getMovieIdPromises = this.getMovieIdPromises(movieIdList);
-            // parallel call for all movie ids
-            Promise.settle(getMovieIdPromises).then((results)=>{ // Promise 2
-              var movieApiData = [];
-              results.forEach((res,index)=>{
-                if(res.isFulfilled()){
-                  var movieDetail = this.getMovieDetail(res._settledValue);
-                  movieApiData.push(movieDetail);
-                }else{
-                  console.log("MOVIE GET ID ERROR ", res.id , " ERROR : ",res._settledValue);
-                }
-              })
-              var saveMIdsPromises = this.getMIdsPromisesForCreate(movieApiData);
-              // parallel saving the movie data in db
-              var saveTime1 = new Date().getTime() / 1000;
-              Promise.settle(saveMIdsPromises).then(function(results){ // Promise 3
-                var saveCount = 0;
-                results.forEach((item)=>{
-                  if(item.isFulfilled()){
-                    saveCount += 1;
-                    console.log("CREATION SUCCESS , ",item._settledValue.movie_name);
-                  }else{
-                    console.log("CREATION ERROR , ",item._settledValue.message);
-                  }
-                })
-                console.log("SAVE COUNT :",saveCount)
-                var saveTime2 = new Date().getTime() / 1000;
-                console.log("Total movie data saving time ",saveTime2-saveTime1);
-              })
-            })
-          }else{
-            console.log("search result zero")
-          }
-        }else{
-          console.log("SEARCH ERROR ",sResult._settledValue.message);
-        }
-      })
-   })
-
   },
   getSearchMoviePromises:function(movieNameInfo){
     var promises = [];
@@ -343,7 +288,7 @@ module.exports = {
       }).catch((err)=>{
         console.log("error in getting movie data")
       })
-    },Promise.resolve());    
+    },Promise.resolve());
   },
   getMovieAsync:function(mId){
     var movideDetailsParams = {

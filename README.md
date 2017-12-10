@@ -18,3 +18,15 @@ ref:https://www.youtube.com/watch?v=F7wLAXOHl2c
  $ mongod -dbpath /mydatabase/db
 3) run webpack for auto build
  $ webpack -w
+
+
+ # run project on machine using mongocloud atlas:
+
+ 1) connect to mongo server:
+ $ mongo  "mongodb://srm-mongo-cloud-shard-00-00-tw5ax.mongodb.net:27017,srm-mongo-cloud-shard-00-01-tw5ax.mongodb.net:27017,srm-mongo-cloud-shard-00-02-tw5ax.mongodb.net:27017/test?replicaSet=srm-mongo-cloud-shard-0" --ssl --authenticationDatabase admin --username SrmHitter9062 --password <PASSWORD>
+
+ 2) run application:
+ $ nodmon app.js
+
+ 2) run elasticsearch:
+ $ elasticsearch

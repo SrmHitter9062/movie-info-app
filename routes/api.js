@@ -38,7 +38,7 @@ router.get('/movie/get_movie_by_id',function(req,res,next){
 /* movie search by text api */
 
 /*movie search by query=>
- pathname - api/movie/controllers
+ pathname - api/get_movie_by_search
  queryParams - query=sultan
  */
 router.get('/movie/get_movie_by_search',function(req,res,next){

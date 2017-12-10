@@ -56,6 +56,13 @@ curl -XDELETE 'localhost:9200/IndexName/typeName/1' (This will delete the docume
 ref - https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-stats.html OR
 2) http://localhost:9200/IndexName/TypeNamepe/_count -> http://localhost:9200/movies/movie/_count
 
+
+# get all index stats :
+http://localhost:9200/_cat/indices?v
+
+# get index data by id
+http://localhost:9200/movies/movie/256002?pretty
+
 # GET ALL MAPPING :
  - http://localhost:9200/_all/_mapping
  - http://localhost:9200/_all/_mapping/typeName
